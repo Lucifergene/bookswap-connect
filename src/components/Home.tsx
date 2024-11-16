@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ChevronRightIcon, HomeIcon } from "@heroicons/react/solid";
 import BrandLogo from "../assets/logo.png";
-import { SearchBar, searchOptions } from "./SearchBar";
-import { Pagination } from "./Pagination";
-import { BookCard } from "./BookCard";
+import { SearchBar, SearchOption, searchOptions } from "./SearchBar";
 import { API_SERVER } from "../../const";
-import { FilterPanel } from "./FilterPanel";
 import { Option } from "./FilterDropdown";
-import { Book } from "./CreateUpdateBook";
+import { BookSearch } from "./BookSearch.tsx";
 
 export interface PageInfo {
   currentPage: number;
@@ -16,7 +15,9 @@ export interface PageInfo {
 }
 
 export const Home: React.FC = () => {
-  const [searchCriteria, setSearchCriteria] = useState(searchOptions[0]);
+  const [searchCriteria, setSearchCriteria] = useState<SearchOption>(
+    searchOptions[0],
+  );
   const [selectedConditions, setSelectedConditions] = useState<Option[]>([]);
   const [availabilityStatus, setAvailabilityStatus] = useState<Option[]>([]);
   const [searchText, setSearchText] = useState("");
@@ -51,7 +52,7 @@ export const Home: React.FC = () => {
 
       try {
         const response = await fetch(
-          `${API_SERVER}/api/books/search?${queryParams.toString()}`
+          `${API_SERVER}/api/books/search?${queryParams.toString()}`,
         );
         const {
           data: { books, pageInfo },
@@ -91,6 +92,13 @@ export const Home: React.FC = () => {
       });
   };
 
+  const clearSearch = () => {
+    setSubmit(false);
+    setSearchText("");
+    setSelectedConditions([]);
+    setAvailabilityStatus([]);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -105,7 +113,7 @@ export const Home: React.FC = () => {
 
     try {
       const response = await fetch(
-        `${API_SERVER}/api/books/search?${queryParams.toString()}`
+        `${API_SERVER}/api/books/search?${queryParams.toString()}`,
       );
       const {
         data: { books, pageInfo },
@@ -121,67 +129,73 @@ export const Home: React.FC = () => {
 
   if (!submit) {
     return (
-      <>
-        <div className="flex min-h-full flex-1 pt-48 flex-col justify-center px-6 py-12 lg:px-8">
-          <div className="sm:mx-auto sm:w-full sm:max-w-sm pb-5">
-            <img
-              alt="bookswap.connect"
-              src={BrandLogo}
-              className="mx-auto h-30 w-auto"
-            />
-          </div>
-          <div className="flex flex-row mx-auto items-center p-6 space-x-3 bg-white rounded-xl shadow-lg w-[60rem]">
-            <SearchBar
-              searchCriteria={searchCriteria}
-              setSearchCriteria={setSearchCriteria}
-              searchText={searchText}
-              setSearchText={setSearchText}
-              handleSubmit={handleSubmit}
-            />
-          </div>
+      <div className="flex min-h-full flex-1 pt-48 flex-col justify-center px-6 py-12 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-sm pb-5">
+          <img
+            alt="bookswap.connect"
+            src={BrandLogo}
+            className="mx-auto h-30 w-auto"
+          />
         </div>
-      </>
+        <div className="flex flex-row mx-auto items-center p-6 space-x-3 bg-white rounded-xl shadow-lg w-[60rem]">
+          <SearchBar
+            searchCriteria={searchCriteria}
+            setSearchCriteria={setSearchCriteria}
+            searchText={searchText}
+            setSearchText={setSearchText}
+            handleSubmit={handleSubmit}
+          />
+        </div>
+      </div>
     );
   }
+
+  const BreadCrumb = () => (
+    <nav className="flex mb-4 ml-6" aria-label="Breadcrumb">
+      <ol role="list" className="flex items-center space-x-4">
+        <li>
+          <div>
+            <Link
+              to="/"
+              onClick={clearSearch}
+              className="text-gray-400 hover:text-gray-500"
+            >
+              <HomeIcon className="flex-shrink-0 h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">Home</span>
+            </Link>
+          </div>
+        </li>
+        <li>
+          <div className="flex items-center">
+            <ChevronRightIcon
+              className="flex-shrink-0 h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
+            <div className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700 cursor-pointer">
+              Search
+            </div>
+          </div>
+        </li>
+      </ol>
+    </nav>
+  );
 
   return (
     <div className="flex flex-row mx-auto items-center my-6 p-6 space-x-3 bg-white rounded-xl shadow-lg w-[70rem]">
       <div className="flex min-h-full flex-1 pt-3 flex-col justify-center px-6 py-12 lg:px-8">
-        <SearchBar
+        <BreadCrumb />
+        <BookSearch
+          books={books}
           searchCriteria={searchCriteria}
           setSearchCriteria={setSearchCriteria}
           searchText={searchText}
           setSearchText={setSearchText}
           handleSubmit={handleSubmit}
-        />
-        <div className="relative mt-5 mb-10 w-full border-t border-gray-300" />
-
-        <FilterPanel
           setSelectedConditions={setSelectedConditions}
           setAvailabilityStatus={setAvailabilityStatus}
+          pageInfo={pageInfo}
+          onPageChange={onPageChange}
         />
-
-        {books.length > 0 ? (
-          <ul
-            role="list"
-            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2"
-          >
-            {books?.map((book: Book) => (
-              <>
-                <li key={book._id}>
-                  <div className="w-full flex items-center justify-between px-2 space-x-6">
-                    <BookCard key={book._id} book={book} />
-                  </div>
-                </li>
-              </>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-center mt-2 text-sm text-gray-700">
-            No books found. Please try a different search.
-          </p>
-        )}
-        <Pagination pageInfo={pageInfo} onPageChange={onPageChange} />
       </div>
     </div>
   );

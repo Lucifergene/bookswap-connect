@@ -1,15 +1,21 @@
+import React, { Fragment } from "react";
 import { SearchIcon } from "@heroicons/react/solid";
-import { Fragment } from "react";
 import {
   Listbox,
   ListboxButton,
+  ListboxOption,
   ListboxOptions,
   Transition,
 } from "@headlessui/react";
 import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
 import { SparklesIcon } from "@heroicons/react/outline";
 
-export const searchOptions = [
+export type SearchOption = {
+  id: number;
+  name: string;
+};
+
+export const searchOptions: SearchOption[] = [
   { id: 1, name: "Title" },
   { id: 2, name: "Author" },
   { id: 3, name: "Genre" },
@@ -20,8 +26,8 @@ function classNames(...classes: string[]) {
 }
 
 type SearchProps = {
-  searchCriteria: any;
-  setSearchCriteria: (searchCriteria: any) => void;
+  searchCriteria: SearchOption;
+  setSearchCriteria: (searchCriteria: SearchOption) => void;
   searchText: string;
   setSearchText: (searchText: string) => void;
   handleSubmit: (e: React.FormEvent) => void;
@@ -87,14 +93,14 @@ export const SearchBar: React.FC<SearchProps> = ({
                   >
                     <ListboxOptions className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
                       {searchOptions.map((option) => (
-                        <Listbox.Option
+                        <ListboxOption
                           key={option.id}
                           className={({ active }) =>
                             classNames(
                               active
                                 ? "text-white bg-indigo-600"
                                 : "text-gray-900",
-                              "cursor-default select-none relative py-2 pl-3 pr-9"
+                              "cursor-default select-none relative py-2 pl-3 pr-9",
                             )
                           }
                           value={option}
@@ -104,7 +110,7 @@ export const SearchBar: React.FC<SearchProps> = ({
                               <span
                                 className={classNames(
                                   selected ? "font-semibold" : "font-normal",
-                                  "block truncate"
+                                  "block truncate",
                                 )}
                               >
                                 {option.name}
@@ -114,7 +120,7 @@ export const SearchBar: React.FC<SearchProps> = ({
                                 <span
                                   className={classNames(
                                     active ? "text-white" : "text-indigo-600",
-                                    "absolute inset-y-0 right-0 flex items-center pr-4"
+                                    "absolute inset-y-0 right-0 flex items-center pr-4",
                                   )}
                                 >
                                   <CheckIcon
@@ -125,7 +131,7 @@ export const SearchBar: React.FC<SearchProps> = ({
                               ) : null}
                             </>
                           )}
-                        </Listbox.Option>
+                        </ListboxOption>
                       ))}
                     </ListboxOptions>
                   </Transition>
